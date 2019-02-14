@@ -102,4 +102,29 @@ describe('GET /todos/:id', () => {
             .expect(404)
             .end(done);
     });
+
+});
+
+describe('DELETE /todos/:id', () => {
+    it('should delete todo with id param', (done) => {
+        let id = todos[0]._id.toHexString();
+        request(app).delete(`/todos/${id}`)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.text).toBe(todos[0].text);
+            })
+            .end(done);
+    });
+    it('should not delete todo with invalid id param', (done) => {
+        let id = '12344';
+        request(app).delete(`/todos/${id}`)
+            .expect(404)
+            .end(done);
+    });
+    it('should return 404 if todo not found and deleted', (done) => {
+        let id = new ObjectID().toHexString();
+        request(app).delete(`/todos/${id}`)
+            .expect(404)
+            .end(done);
+    });
 });
