@@ -5,6 +5,6 @@ mongoose.Promise = global.Promise; //use built-in Promise , tell which Promise l
 /**
  * connect to mongoDb using mongoose
  */
-mongoose.connect(process.env.MONGOLAB_RED_URI ||"mongodb://localhost:27017/ToDoApp");
+mongoose.connect(process.env.MONGOLAB_RED_URI);
 
 module.exports = { mongoose };
