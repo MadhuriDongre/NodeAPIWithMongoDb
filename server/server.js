@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todos');
 const {user} = require('./models/user');
+const { ObjectID } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -35,10 +36,25 @@ app.post('/todos',(req,res)=>{
  */
 app.get("/todos", (req, res) => {
     Todo.find().then((response)=>{
-        res.send(response);
+        res.send({response});
     },(err)=>{
-        res.send(err);
+        res.status(400).send(err);
     });
+});
+/**
+ * get todo item using id passed as param
+ */
+app.get("/todos/:id",(req,res)=>{
+    let id = req.params.id;
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send('Invalid Id');
+    }
+    Todo.findById(id).then((todo)=>{
+        if(!todo){
+            res.status(404).send(`No todo item for id: ${id}`);
+        }
+        res.send(todo);
+    }).catch(err=>res.status(404).send());
 });
 
 app.listen(port,()=>{

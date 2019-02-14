@@ -42,10 +42,10 @@ Todo.findById(id).then((res) => {
 /**
  * Query for user using findById
  */
-let userId ='6c64257ea641562cbc8cd150'
+let userId ='5c64257ea641562cbc8cd150'
 user.findById(userId).then((res)=>{
     if(!res){
         return console.log('id not found');
     }
     console.log('find user by id', res);
-}).catch(err=>console.log(err));
+}).catch(err=>console.log(JSON.stringify(err,undefined,2)));
