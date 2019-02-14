@@ -12,7 +12,10 @@ const todos =[
         text:"Learn Java"},
     { 
         _id: new ObjectID(),
-        text: "Learn Python"}
+        text: "Learn Python",
+        completed: true,
+        completedAt: 123456
+    }
 ];
 
 //this runs before each test and remove all data from db
@@ -74,7 +77,7 @@ describe('GET /todos',()=>{
         request(app).get('/todos')
         .expect(200)
         .expect((res)=>{
-            expect(res.body.response.length).toBe(2);
+            expect(res.body.length).toBe(2);
         })
         .end(done);
     });
@@ -105,15 +108,26 @@ describe('GET /todos/:id', () => {
 
 });
 
+/**
+ * test suite for DELETE route
+ */
 describe('DELETE /todos/:id', () => {
     it('should delete todo with id param', (done) => {
         let id = todos[0]._id.toHexString();
         request(app).delete(`/todos/${id}`)
             .expect(200)
             .expect((res) => {
-                expect(res.body.text).toBe(todos[0].text);
+                expect(res.body._id).toBe(todos[0]._id.toHexString());
             })
-            .end(done);
+            .end((err,res)=>{
+                if(err){
+                    return done(err);
+                }
+                Todo.findById(id).then((res)=>{
+                    expect(res).toNotExist();
+                    done();
+                }).catch(e=>done(e));
+            });
     });
     it('should not delete todo with invalid id param', (done) => {
         let id = '12344';
@@ -124,6 +138,59 @@ describe('DELETE /todos/:id', () => {
     it('should return 404 if todo not found and deleted', (done) => {
         let id = new ObjectID().toHexString();
         request(app).delete(`/todos/${id}`)
+            .expect(404)
+            .end(done);
+    });
+});
+
+/**
+ * test suite for PATCH route
+ */
+describe('PATCH /todos/:id', () => {
+    it('should update todo with id param', (done) => {
+        let id = todos[0]._id.toHexString();
+        request(app).patch(`/todos/${id}`)
+            .send({text:"test data 1",completed: true})
+            .expect(200)
+            .expect((res) => {
+                expect(res.body._id).toBe(todos[0]._id.toHexString());
+                expect(res.body.text).toEqual("test data 1");
+                expect(res.body.completed).toBe(true);
+                expect(res.body.completedAt).toNotBe(null);
+            })
+            .end(done);
+    });
+    it('should clear completedAt when todo is not completed', (done) => {
+        let id = todos[1]._id.toHexString();
+        request(app).patch(`/todos/${id}`)
+            .send({ text: "test data 2", completed: false })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body._id).toBe(todos[1]._id.toHexString());
+                expect(res.body.text).toEqual("test data 2");
+                expect(res.body.completed).toBe(false);
+                expect(res.body.completedAt).toBe(null).toNotExist();
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                Todo.findById(id).then((res) => {
+                    expect(res.completed).toBe(false);
+                    expect(res.completedAt).toBe(null);
+                    done();
+                }).catch(e => done(e));
+            });
+    });
+    it('should not update when id is invalid', (done) => {
+        let id = '12344';
+        request(app).patch(`/todos/${id}`)
+            .expect(404)
+            .end(done);
+    });
+    it('should not update when id does not exist in db', (done) => {
+        let id = new ObjectID().toHexString();
+        request(app).patch(`/todos/${id}`)
             .expect(404)
             .end(done);
     });

@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const _ = require('lodash');
 
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todos');
@@ -36,7 +37,7 @@ app.post('/todos',(req,res)=>{
  */
 app.get("/todos", (req, res) => {
     Todo.find().then((response)=>{
-        res.send({response});
+        res.send(response);
     },(err)=>{
         res.status(400).send(err);
     });
@@ -57,6 +58,9 @@ app.get("/todos/:id",(req,res)=>{
     }).catch(err=>res.status(400).send());
 });
 
+/**
+ * delete todo items using id
+ */
 app.delete('/todos/:id',(req,res)=>{
     let id = req.params.id;
     if (!ObjectID.isValid(id)) {
@@ -69,6 +73,33 @@ app.delete('/todos/:id',(req,res)=>{
         res.send(todo);
     }).catch(err => res.status(400).send());
 });
+
+/**
+ * update route to update the todolist
+ */
+app.patch('/todos/:id',(req,res)=>{
+    let id = req.params.id;
+    let body = _.pick(req.body,['text','completed']); //picks the properties from res.body if present
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send('Invalid Id');
+    }
+    //checks if completed property is boolean
+    if (_.isBoolean(body.completed) && body.completed){
+        body.completedAt = new Date().getTime();
+    }else{
+        body.completed = false,
+        body.completedAt = null
+    }
+
+    Todo.findByIdAndUpdate(id, { $set: body },{new: true}).then((todo)=>{
+        if(!todo){
+            res.status(404).send();
+        }
+        res.send(todo);
+
+    }).catch(e=>res.status(400).send());
+});
+
 
 app.listen(port,()=>{
     console.log(`Server running on port ${port}`);
