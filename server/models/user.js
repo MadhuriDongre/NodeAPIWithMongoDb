@@ -46,6 +46,30 @@ UserSchema.methods.toJSON= function(){
 };
 
 /**
+ * use static ---works as methods and turn into model method
+ * use model as this binding
+ */
+UserSchema.statics.findByToken=function(token){
+  let User = this;
+  let decoded;
+
+  try{
+    decoded = jwt.verify(token,'123abc');
+
+  }catch(e){
+    return new Promise((resolve, reject)=>{
+      reject();
+    });
+    // return new Promise.reject(e);
+  }
+  return User.findOne({
+    _id:decoded._id,
+    'tokens.token':token,
+    'tokens.access': 'auth'
+  });
+};
+
+/**
  * Instance method
  */
 UserSchema.methods.generateAuthToken = function(){

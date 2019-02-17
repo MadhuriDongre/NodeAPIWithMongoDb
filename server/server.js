@@ -2,12 +2,13 @@ require('../config/config');
 
 const express = require("express");
 const bodyParser = require("body-parser");
+const { ObjectID } = require('mongodb');
 const _ = require('lodash');
 
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todos');
 const {User} = require('./models/user');
-const { ObjectID } = require('mongodb');
+const { authenticate} = require('./middleware/authenticate');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -114,6 +115,14 @@ app.post('/user',(req,res)=>{
     }).then((token)=>{
         res.header('x-auth',token).send(user);
     }).catch(e=>res.status(400).send(e));
+});
+
+
+ /**
+  * GET method to get logged in user details
+  */
+app.get('/user/me', authenticate,(req,res)=>{
+    res.send(req.user);
 });
 
 app.listen(port,()=>{
