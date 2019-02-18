@@ -15,6 +15,10 @@ let Todo = mongoose.model("Todo", {
   completedAt: {
     type: Date,
     default: null
+  },
+  _creator:{
+    type: mongoose.Schema.Types.ObjectId,
+    require: true
   }
 });
 
