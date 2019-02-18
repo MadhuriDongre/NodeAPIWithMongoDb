@@ -84,7 +84,16 @@ UserSchema.methods.generateAuthToken = function(){
   return user.save().then(()=>{
     return token;
   });
-}
+};
+
+UserSchema.methods.removeToken = function(token){
+  let user = this;
+  return user.update({
+    $pull:{
+      tokens:{token}
+    }
+  });
+};
 
 /**
  * use mongoose middleware to hash the password before saving it to database

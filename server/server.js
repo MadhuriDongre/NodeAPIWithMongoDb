@@ -136,6 +136,14 @@ app.post('/user/login',(req,res)=>{
     }).catch(err=>res.status(400).send());
 });
 
+app.delete('/user/me/token',authenticate,(req,res)=>{
+    req.user.removeToken(req.token).then(()=>{
+        res.status(200).send();
+    },()=>{
+        res.status(400).send();
+    });
+});
+
 app.listen(port,()=>{
     console.log(`Server running on port ${port}`);
 });
